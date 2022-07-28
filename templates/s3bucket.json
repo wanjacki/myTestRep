@@ -1,218 +1,55 @@
 {
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Template Creates a single EC2 instance with a single ENI which has multiple private and public IPs",
+  "Parameters":{
+  "Subnet": {
+      "Description": "ID of the Subnet the instance should be launched in, this will link the instance to the same VPC.",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+      
+    }
+},
   "Resources": {
-    "DevToolsPortfolio80CBBB69": {
-      "Type": "AWS::ServiceCatalog::Portfolio",
+    "EIP1": {
+      "Type": "AWS::EC2::EIP",
       "Properties": {
-        "DisplayName": "DevTools",
-        "ProviderName": "IT"
-      },
-      "Metadata": {
-        "aws:cdk:path": "HelloServerlessStack/HelloServerlessProduct/DevToolsPortfolio/Resource"
+        "Domain": "VPC"
       }
     },
-    "CDKMetadata": {
-      "Type": "AWS::CDK::Metadata",
+    "EIP2": {
+      "Type": "AWS::EC2::EIP",
       "Properties": {
-        "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WMTQrCMBSEz+I+eW0V0aXQC5R6AIlJqq+NeSU/dRFyd1MsgqtvBuabPaQz1FyY+Smg3l3E23Oppmql125BqaUIwtBj26TOkYoyXIOQE+vIhYEMUmbNofibzg3eIZVy+/+AdrA/hZXSa0/RSb3mlqzCgGRzZpaUhtFXS3OCY/kdPSJ30QZ8aei//ABw+BvGuwAAAA=="
-      },
-      "Metadata": {
-        "aws:cdk:path": "HelloServerlessStack/HelloServerlessProduct/CDKMetadata/Default"
-      },
-      "Condition": "CDKMetadataAvailable"
-    }
-  },
-  "Conditions": {
-    "CDKMetadataAvailable": {
-      "Fn::Or": [
-        {
-          "Fn::Or": [
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "af-south-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ap-east-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ap-northeast-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ap-northeast-2"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ap-south-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ap-southeast-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ap-southeast-2"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ca-central-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "cn-north-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "cn-northwest-1"
-              ]
-            }
-          ]
-        },
-        {
-          "Fn::Or": [
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "eu-central-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "eu-north-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "eu-south-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "eu-west-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "eu-west-2"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "eu-west-3"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "me-south-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "sa-east-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "us-east-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "us-east-2"
-              ]
-            }
-          ]
-        },
-        {
-          "Fn::Or": [
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "us-west-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "us-west-2"
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  }
+        "Domain": "VPC"
+      }
+    },
+    "Association1":
+    {
+   "Type": "AWS::EC2::EIPAssociation",
+   "DependsOn" : ["ENI","EIP1"],
+   "Properties": {
+      "AllocationId": { "Fn::GetAtt" : [ "EIP1", "AllocationId" ]},
+      "NetworkInterfaceId": {"Ref":"ENI"},
+      "PrivateIpAddress": {"Fn::Select" : [ "0", {"Fn::GetAtt" : [ "ENI" , "SecondaryPrivateIpAddresses"]} ]}
+   }
+},
+"Association2":
+    {
+   "Type": "AWS::EC2::EIPAssociation",
+   "DependsOn" : ["ENI","EIP2"],
+   "Properties": {
+      "AllocationId": { "Fn::GetAtt" : [ "EIP2", "AllocationId" ]},
+       "NetworkInterfaceId": {"Ref":"ENI"},
+      "PrivateIpAddress": {"Fn::Select" : [ "1", {"Fn::GetAtt" : [ "ENI" , "SecondaryPrivateIpAddresses"]} ]}
+   }
+},
+ "ENI":
+{
+   "Type" : "AWS::EC2::NetworkInterface",
+   "Properties" : {
+      "SecondaryPrivateIpAddressCount" : 2,
+      "SourceDestCheck" : true,
+      "SubnetId" : { "Fn::Select" : [ "0", {"Ref" : "Subnet"} ] }
 }
+
+
+  
+}}}
